@@ -1,3 +1,88 @@
+<a href="https://github.com/justAnArthur/travelling-salesman-problem"><img src=".github/banner.svg" alt="Travelling salesman solver: Orders random cities with a genetic algorithm and with a two-city swap search that the report calls tabu search." width="100%"></a>
+
+# Travelling salesman solver
+
+Orders N random cities into a short route with a genetic algorithm or a two-city swap search, and redraws the best route live in matplotlib. Built for Artificial Intelligence (UI) at FIIT STU in autumn 2023.
+
+> Finished and archived. The assignment asked for tabu search. The second solver only ever moves to a strictly shorter neighbour and stops at the first local optimum, so it behaves as steepest-descent local search. Its tabu list never filters anything (it checks a route against stored `(length, route)` pairs), and because only improving moves are taken, a working one would not change the result either.
+
+## What it does
+
+- Places N cities (default 11, `-n` to change) at random integer points on a 100 × 100 grid, a new map on every run
+- Scores a route as the summed Euclidean length of the open path through the cities; the leg back to the start is not counted, although the plot draws the closed loop
+- Genetic algorithm (`-a g`): starts from 5·N random routes, keeps the shortest k so that their k·(k−1)/2 pairs give about 5·N children, crosses every pair with a prefix-based PMX crossover, and rotates ⌈0.2·N⌉ random cities in half of the children. Children replace the whole population (no elitism); it stops after about 2.5·N generations without a new best
+- Swap search (`-a t`): starts from one random route, scores all N·(N−1)/2 routes that swap two cities, moves to the shortest if it beats the current one, and otherwise stops
+- Prints the best length, the iteration and the number of routes generated while it runs, then the final city order and the run time
+
+## How it works
+
+```mermaid
+flowchart TD
+  A[Place N random cities on a 100 x 100 grid] --> B{Which -a?}
+  B -->|g| C[5·N random routes]
+  C --> D[Score routes, keep the shortest k]
+  D --> E{New best in the last 2.5·N generations?}
+  E -->|yes| F[Cross every pair of kept routes]
+  F --> G[Rotate a few cities in half of the children]
+  G --> D
+  E -->|no| H[Print the best route and the time]
+  B -->|t| I[One random route]
+  I --> J[Score every route one two-city swap away]
+  J --> K{Best swap shorter?}
+  K -->|yes, move to it| J
+  K -->|no| H
+```
+
+## Results
+
+From the report. Route length / routes generated / seconds:
+
+| Cities | Genetic algorithm         | Swap search ("tabu")       |
+|-------:|---------------------------|----------------------------|
+| 11     | 268 / 1,903 / 3.14        | 275 / 3,861 / 3.63         |
+| 11     | 318 / 1,063 / 4.15        | 299 / 386 / 3.63           |
+| 11     | 298 / 1,399 / 4.68        | 270 / 3,311 / 3.29         |
+| 51     | 1,395 / 58,191 / 11.05    | 802 / 573,761 / 42.68      |
+| 51     | 1,408 / 24,463 / 8.70     | 777 / 6,375,166 / 46.42    |
+| 51     | 1,338 / 19,023 / 9.61     | 754 / 624,761 / 46.27      |
+| 101    | 3,196.88 / 2,013,871 / 24.02 | 1,894 / 5,213,415 / 142.23 |
+| 101    | 3,185.78 / 145,221 / 25.05   | 1,609 / 3,787,511 / –      |
+
+Every run draws a new random map, so the two cells in a row come from different maps. The report concludes that the swap search finds shorter routes but generates far more of them and keeps them all in its tabu list, about 145 MB on the first 101-city run, and that the genetic algorithm's settings were probably not tuned well.
+
+## Run
+
+```bash
+pip install matplotlib
+python main.py -a g          # genetic algorithm, 11 cities
+python main.py -a t -n 51    # swap search, 51 cities
+```
+
+The end of a 51-city run, as shown in the report:
+
+```text
+Best: 874.95010054318 | Depth: 48 | Gen Gen: 62476011
+Order: [44, 29, 47, 9, 42, 50, 11, 25, 16, 39, 12, 0, 30, 17, 43, 2, 4, 31, 26, 22, 8, 35, 28, 1, 23, 27, 21, 32, 14, 19, 40, 38, 37, 20, 7, 49, 46, 5, 24, 34, 45, 3, 33, 15, 48, 13, 36, 18, 41, 6, 10]
+```
+
+## Stack
+
+Python 3.10 or newer (`match`), matplotlib for the live plot; `random`, `math`, `sys` and `time` from the standard library.
+
+## Documentation
+
+- [documentation.pdf](documentation.pdf): assignment report (Slovak)
+- [02 travelling-salesman-problem.docx](02%20travelling-salesman-problem.docx): the report as a Word file
+- [02_Artur_Kozubov.zip](02_Artur_Kozubov.zip): the submitted archive
+
+## License
+
+[CC BY-NC-ND 4.0](LICENSE): share it with credit, but no changes and no commercial use. Don't hand it in as your own coursework.
+
+---
+
+## Pôvodná dokumentácia (SK)
+
 **Travelling Salesman Problem**
 
 - Genetický algoritmus
